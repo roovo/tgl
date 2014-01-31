@@ -1,16 +1,28 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"io/ioutil"
+	"net/http"
+)
+
+func gitlabRequest() ([]byte, error) {
+	resp, err := http.Get("http://demo.gitlab.com/api/v3/projects")
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+	contents, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return contents, err
+}
 
 func main() {
-	var gitlab_url string
-	var username string
-	var password string
+	contents, err := gitlabRequest()
 
-	fmt.Printf("gitlab url: ")
-	fmt.Scanln(&gitlab_url)
-	fmt.Printf("username: ")
-	fmt.Scanln(&username)
-	fmt.Printf("password: ")
-	fmt.Scanln(&password)
+	fmt.Printf("%n: %s\n", err, string(contents))
 }
