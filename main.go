@@ -13,6 +13,6 @@ func main() {
 	projects, _ := gitlab.Projects()
 
 	for _, project := range projects {
-		fmt.Printf("%s\n", project.Name)
+		fmt.Printf("%t: %s\n", project.MergeRequestsEnabled, project.Name)
 	}
 }
