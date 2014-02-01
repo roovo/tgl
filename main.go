@@ -1,8 +1,8 @@
 package main
 
 import (
-  "github.com/roovo/tgl/gitlab"
 	"fmt"
+	"github.com/roovo/tgl/gitlab"
 )
 
 func main() {
