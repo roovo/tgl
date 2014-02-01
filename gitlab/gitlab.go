@@ -19,9 +19,8 @@ func (g *Gitlab) Url() string {
 	return g.url + "/api/v3"
 }
 
-func Projects() ([]byte, error) {
-	gitlab := NewGitlab("http://demo.gitlab.com")
-	url := gitlab.Url() + "/projects"
+func (g *Gitlab) Projects() ([]byte, error) {
+	url := g.Url() + "/projects"
 
 	resp, err := http.Get(url)
 	if err != nil {
