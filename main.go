@@ -8,7 +8,7 @@ import (
 func main() {
 	gitlab := gitlab.NewGitlab("http://demo.gitlab.com")
 
-	contents, err := gitlab.Projects()
+	contents, err := gitlab.Login("test@test.com", "123456")
 
 	fmt.Printf("%n: %s\n", err, string(contents))
 }
