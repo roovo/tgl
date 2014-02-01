@@ -16,12 +16,12 @@ func NewGitlab(a_url string) *Gitlab {
 	}
 }
 
-func (g *Gitlab) ApiUrl() string {
+func (g *Gitlab) apiUrl() string {
 	return g.url + "/api/v3"
 }
 
 func (g *Gitlab) Login(login string, password string) ([]byte, error) {
-	request_url := g.ApiUrl() + "/session"
+	request_url := g.apiUrl() + "/session"
 
 	values := make(url.Values)
 	values.Set("login", login)
@@ -42,7 +42,7 @@ func (g *Gitlab) Login(login string, password string) ([]byte, error) {
 }
 
 func (g *Gitlab) Projects() ([]byte, error) {
-	url := g.ApiUrl() + "/projects"
+	url := g.apiUrl() + "/projects"
 
 	resp, err := http.Get(url)
 	if err != nil {
