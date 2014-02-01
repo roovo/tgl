@@ -7,7 +7,7 @@ import (
 )
 
 type Gitlab struct {
-	url string ""
+	url string
 }
 
 func NewGitlab(a_url string) *Gitlab {
