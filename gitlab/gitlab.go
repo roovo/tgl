@@ -1,13 +1,19 @@
 package gitlab
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 )
 
 type Gitlab struct {
-	url string
+	url   string
+	Token string
+}
+
+type Session struct {
+	PrivateToken string `json:"private_token,omitempty"`
 }
 
 func NewGitlab(a_url string) *Gitlab {
@@ -16,12 +22,12 @@ func NewGitlab(a_url string) *Gitlab {
 	}
 }
 
-func (g *Gitlab) apiUrl() string {
-	return g.url + "/api/v3"
+func (g *Gitlab) apiUrlFor(path string) string {
+	return g.url + "/api/v3" + path + "?private_token=" + g.Token
 }
 
-func (g *Gitlab) Login(login string, password string) ([]byte, error) {
-	request_url := g.apiUrl() + "/session"
+func (g *Gitlab) Login(login string, password string) (err error) {
+	request_url := g.apiUrlFor("/session")
 
 	values := make(url.Values)
 	values.Set("login", login)
@@ -29,20 +35,27 @@ func (g *Gitlab) Login(login string, password string) ([]byte, error) {
 
 	resp, err := http.PostForm(request_url, values)
 	if err != nil {
-		return nil, err
+		return
 	}
-
 	defer resp.Body.Close()
+
 	contents, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return
 	}
 
-	return contents, err
+	var session Session
+	err = json.Unmarshal(contents, &session)
+	if err != nil {
+		return
+	}
+
+	g.Token = session.PrivateToken
+	return
 }
 
 func (g *Gitlab) Projects() ([]byte, error) {
-	url := g.apiUrl() + "/projects"
+	url := g.apiUrlFor("/projects")
 
 	resp, err := http.Get(url)
 	if err != nil {
