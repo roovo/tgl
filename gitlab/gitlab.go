@@ -2,6 +2,7 @@ package gitlab
 
 import (
 	"encoding/json"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -29,13 +30,32 @@ type Session struct {
 }
 
 func NewGitlab(a_url string) *Gitlab {
-	return &Gitlab{
-		Url: a_url,
-	}
+	g := &Gitlab{}
+	g.load()
+	return g
 }
 
 func (g *Gitlab) apiUrlFor(path string) string {
 	return g.Url + "/api/v3" + path + "?private_token=" + g.Token
+}
+
+func (g *Gitlab) load() error {
+	f, err := os.Open(configFilePath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	dec := json.NewDecoder(f)
+	for {
+		if err := dec.Decode(g); err == io.EOF {
+			break
+		} else if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (g *Gitlab) save() (err error) {
