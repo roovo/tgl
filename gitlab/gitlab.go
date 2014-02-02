@@ -3,6 +3,7 @@ package gitlab
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/howeyc/gopass"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -35,16 +36,16 @@ func NewGitlab() *Gitlab {
 
 	err := g.load()
 	if err != nil {
-    var username, password string
+		var username, password string
 
 		fmt.Printf("gitlab url: ")
 		fmt.Scanln(&g.Url)
-    fmt.Printf("username: ")
-    fmt.Scanln(&username)
-    fmt.Printf("password: ")
-    fmt.Scanln(&password)
+		fmt.Printf("username: ")
+		fmt.Scanln(&username)
+		fmt.Printf("password: ")
+		password = string(gopass.GetPasswd())
 
-    g.Login(username, password)
+		g.Login(username, password)
 	}
 	return g
 }
