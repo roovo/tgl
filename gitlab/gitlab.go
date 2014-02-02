@@ -50,8 +50,52 @@ func NewGitlab() *Gitlab {
 	return g
 }
 
+func (g *Gitlab) Login(login string, password string) (err error) {
+	var session *Session
+
+	params := &map[string]string{
+		"login":    login,
+		"password": password,
+	}
+
+	err = g.postTo("/session", params, &session)
+	if err != nil {
+		return
+	}
+
+	g.Token = session.PrivateToken
+	g.save()
+
+	return
+}
+
+func (g *Gitlab) Projects() (projects []*Project, err error) {
+	err = g.getFrom("/projects", &projects)
+
+	return
+}
+
 func (g *Gitlab) apiUrlFor(path string) string {
 	return g.Url + "/api/v3" + path + "?private_token=" + g.Token
+}
+
+func (g *Gitlab) getFrom(path string, out interface{}) (err error) {
+	url := g.apiUrlFor(path)
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return
+	}
+
+	defer resp.Body.Close()
+	contents, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+
+	return json.Unmarshal(contents, &out)
+
+	return
 }
 
 func (g *Gitlab) load() error {
@@ -73,23 +117,14 @@ func (g *Gitlab) load() error {
 	return nil
 }
 
-func (g *Gitlab) save() (err error) {
-	f, err := os.Create(configFilePath)
-	if err != nil {
-		return
-	}
-	defer f.Close()
-
-	enc := json.NewEncoder(f)
-	return enc.Encode(g)
-}
-
-func (g *Gitlab) Login(login string, password string) (err error) {
-	request_url := g.apiUrlFor("/session")
+func (g *Gitlab) postTo(path string, params *map[string]string, out interface{}) (err error) {
+	request_url := g.apiUrlFor(path)
 
 	values := make(url.Values)
-	values.Set("login", login)
-	values.Set("password", password)
+
+	for k, v := range *params {
+		values.Set(k, v)
+	}
 
 	resp, err := http.PostForm(request_url, values)
 	if err != nil {
@@ -102,34 +137,16 @@ func (g *Gitlab) Login(login string, password string) (err error) {
 		return
 	}
 
-	var session *Session
-
-	err = json.Unmarshal(contents, &session)
-	if err != nil {
-		return
-	}
-
-	g.Token = session.PrivateToken
-	g.save()
-
-	return
+	return json.Unmarshal(contents, &out)
 }
 
-func (g *Gitlab) Projects() (projects []*Project, err error) {
-	url := g.apiUrlFor("/projects")
-
-	resp, err := http.Get(url)
+func (g *Gitlab) save() (err error) {
+	f, err := os.Create(configFilePath)
 	if err != nil {
 		return
 	}
+	defer f.Close()
 
-	defer resp.Body.Close()
-	contents, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return
-	}
-
-	err = json.Unmarshal(contents, &projects)
-
-	return
+	enc := json.NewEncoder(f)
+	return enc.Encode(g)
 }
