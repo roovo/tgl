@@ -5,11 +5,15 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
+	"path/filepath"
 )
 
+var configFilePath = filepath.Join(os.Getenv("HOME"), ".tglconfig")
+
 type Gitlab struct {
-	url   string
-	token string
+	Url   string
+	Token string
 }
 
 type Project struct {
@@ -26,12 +30,23 @@ type Session struct {
 
 func NewGitlab(a_url string) *Gitlab {
 	return &Gitlab{
-		url: a_url,
+		Url: a_url,
 	}
 }
 
 func (g *Gitlab) apiUrlFor(path string) string {
-	return g.url + "/api/v3" + path + "?private_token=" + g.token
+	return g.Url + "/api/v3" + path + "?private_token=" + g.Token
+}
+
+func (g *Gitlab) save() (err error) {
+	f, err := os.Create(configFilePath)
+	if err != nil {
+		return
+	}
+	defer f.Close()
+
+	enc := json.NewEncoder(f)
+	return enc.Encode(g)
 }
 
 func (g *Gitlab) Login(login string, password string) (err error) {
@@ -59,7 +74,9 @@ func (g *Gitlab) Login(login string, password string) (err error) {
 		return
 	}
 
-	g.token = session.PrivateToken
+	g.Token = session.PrivateToken
+	g.save()
+
 	return
 }
 
