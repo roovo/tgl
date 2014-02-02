@@ -6,9 +6,7 @@ import (
 )
 
 func main() {
-	gitlab := gitlab.NewGitlab("http://demo.gitlab.com")
-
-	gitlab.Login("test@test.com", "123456")
+	gitlab := gitlab.NewGitlab()
 
 	projects, _ := gitlab.Projects()
 

@@ -2,6 +2,7 @@ package gitlab
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -29,9 +30,22 @@ type Session struct {
 	PrivateToken string `json:"private_token,omitempty"`
 }
 
-func NewGitlab(a_url string) *Gitlab {
+func NewGitlab() *Gitlab {
 	g := &Gitlab{}
-	g.load()
+
+	err := g.load()
+	if err != nil {
+    var username, password string
+
+		fmt.Printf("gitlab url: ")
+		fmt.Scanln(&g.Url)
+    fmt.Printf("username: ")
+    fmt.Scanln(&username)
+    fmt.Printf("password: ")
+    fmt.Scanln(&password)
+
+    g.Login(username, password)
+	}
 	return g
 }
 
